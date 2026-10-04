@@ -1,0 +1,59 @@
+# Dependencies and compiler output; keep package-lock.json and Cargo.lock
+node_modules/
+target/
+/dist/
+/builds/
+/src-tauri/gen/schemas/
+
+# Captured traffic and local state; synthetic fixtures stay trackable
+/logs/
+/captures/
+/exports/
+/.trash/
+*.log
+
+# Private installer scripts, workflow templates and downloaded release packages
+/release-local/
+# GitHub Actions requires a tracked workflow; deliberate opt-in uses git add -f.
+# Once committed, it remains in history even after removal from the working tree.
+/.github/workflows/release.yml
+
+# Signing material and machine-local environment
+.env
+.env.*
+!.env.example
+*.pfx
+*.p12
+*.key
+*.mobileprovision
+
+# Audits, backups, scratch files
+/docs/
+/tests/
+/src-tauri/tests/
+/run.bat
+/.audit-local/
+/.repair-backups/
+/mother-project/
+/analysis/
+*.tmp
+*.bak
+*.orig
+
+# Python and browser-test artifacts
+__pycache__/
+*.py[cod]
+.pytest_cache/
+/test-results/
+/playwright-report/
+/blob-report/
+
+# Editor / OS files
+/.idea/
+/.vscode/
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Local maintenance and asset generation scripts
+/scripts/

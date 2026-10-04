@@ -1,0 +1,26 @@
+{
+  "name": "network-path",
+  "version": "1.0.0",
+  "description": "Network traffic inspector & parser with DevTools Network schema export",
+  "main": "src/index.html",
+  "scripts": {
+    "tauri": "tauri",
+    "dev": "tauri dev",
+    "build": "tauri build",
+    "start": "tauri dev"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.0.0",
+    "playwright": "^1.63.0"
+  },
+  "keywords": [
+    "network",
+    "sniffer",
+    "devtools",
+    "parser",
+    "traffic",
+    "tauri"
+  ],
+  "author": "Ksirailway-base",
+  "license": "MIT"
+}

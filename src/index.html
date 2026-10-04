@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Network-path — Chrome DevTools Traffic Inspector</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" type="image/svg+xml" href="assets/brand/app.svg">
+  <link rel="alternate icon" href="assets/brand/favicon.ico">
+  <link rel="apple-touch-icon" href="assets/brand/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body class="dark-theme">
+  <div class="app-layout">
+    
+    <aside class="app-icon-rail" id="appIconRail">
+      <div class="rail-top-group">
+        <div class="rail-brand">
+          <img src="assets/brand/app.svg" width="24" height="24" alt="" aria-hidden="true">
+          <span class="rail-brand-name">Network-path</span>
+        </div>
+
+        <div class="rail-divider"></div>
+
+        <button class="rail-item active" id="navTraffic" data-view="traffic" title="Traffic">
+          <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10h2l2-5 3 10 2-7 2 4h3"/></svg>
+          <span class="rail-label">Traffic</span>
+        </button>
+
+        <button class="rail-item" id="navIntercept" data-view="intercept" title="Intercept: pause, review, edit, forward or drop requests">
+          <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="12" height="14" rx="2"/><line x1="8" y1="8" x2="8" y2="12"/><line x1="12" y1="8" x2="12" y2="12"/></svg>
+          <span class="rail-label">Intercept</span>
+        </button>
+
+        <button class="rail-item" id="navRepeater" data-view="repeater" title="Repeater">
+          <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11V9a4 4 0 0 1 4-4h9"/><path d="M13 2l3 3-3 3"/><path d="M17 9v2a4 4 0 0 1-4 4H4"/><path d="M7 18l-3-3 3-3"/></svg>
+          <span class="rail-label">Repeater</span>
+        </button>
+
+        <button class="rail-item" id="navSitemap" data-view="sitemap" title="Sitemap">
+          <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="6" height="6" rx="1"/><rect x="11" y="3" width="6" height="6" rx="1"/><rect x="3" y="11" width="6" height="6" rx="1"/><rect x="11" y="11" width="6" height="6" rx="1"/></svg>
+          <span class="rail-label">Sitemap</span>
+        </button>
+
+        <button class="rail-item" id="navMockRules" data-view="mock" title="Mock Rules">
+          <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h12v3H4z"/><path d="M4 9h12v3H4z"/><path d="M4 14h6v3H4z"/><path d="M14 14l2 2 3-3"/></svg>
+          <span class="rail-label">Mock Rules</span>
+          <span id="mockRulesBadge" class="rail-badge" style="display:none;">0</span>
+        </button>
+
+        <button class="rail-item" id="navSessions" data-view="sessions" title="Sessions: list, open, compare">
+          <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="14" height="12" rx="2"/><path d="M3 8h14"/><path d="M7 12h6"/></svg>
+          <span class="rail-label">Sessions</span>
+        </button>
+
+        <button class="rail-item" id="navDiff" data-view="diff" title="Diff Compare">
+          <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="3" width="7" height="14" rx="1"/><rect x="11" y="3" width="7" height="14" rx="1"/><line x1="10" y1="7" x2="10" y2="7.01"/><line x1="10" y1="10" x2="10" y2="10.01"/><line x1="10" y1="13" x2="10" y2="13.01"/></svg>
+          <span class="rail-label">Diff</span>
+        </button>
+      </div>
+
+      <div class="rail-bottom-group">
+        <div class="rail-divider"></div>
+
+        <button class="rail-item rail-action" id="btnLaunchChrome" title="Launch Chrome with debug port">
+          <svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10" cy="10" r="8"/><circle cx="10" cy="10" r="3"/><line x1="10" y1="2" x2="10" y2="7"/></svg>
+          <span class="rail-label" id="launchLabel">Launch Browser</span>
+        </button>
+
+        <button class="rail-item rail-action" id="btnNewSession" title="New Session">
+          <svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg>
+          <span class="rail-label">New Session</span>
+        </button>
+
+        <div class="rail-dropdown-wrapper">
+          <button class="rail-item rail-action" id="btnExportMenu" title="Export Data">
+            <svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3v9"/><path d="M6 8l4 4 4-4"/><path d="M4 15h12"/></svg>
+            <span class="rail-label">Export</span>
+          </button>
+          <div class="dropdown-menu rail-dropdown-menu" id="exportDropdown" style="display:none;">
+            <button class="dropdown-item" data-export="har">Export as HAR 1.2</button>
+            <button class="dropdown-item" data-export="postman">Export Postman v2.1</button>
+            <button class="dropdown-item" data-export="csv">Export CSV Table</button>
+            <button class="dropdown-item" data-export="json">Export JSON Data</button>
+            <button class="dropdown-item" data-export="swagger">
+            <button class="dropdown-item" data-export="scraper">Export scraper.py skeleton</button>Export OpenAPI 3.0</button>
+            <div class="dropdown-separator"></div>
+            <button class="dropdown-item" id="btnImportHar">Import HAR file...</button>
+            <input type="file" id="harFileInput" accept=".har,application/json" style="display:none;">
+          </div>
+        </div>
+
+        <button class="rail-item rail-action rail-danger" id="btnClear" title="Clear view (keep saved files)">
+          <svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h12"/><path d="M8 6V4h4v2"/><path d="M6 6l1 11h6l1-11"/></svg>
+          <span class="rail-label">Clear View</span>
+        </button>
+
+        <button class="rail-item rail-action" id="btnExtBridge" title="Extension Guide">
+          <svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.5 2H17v3.5"/><path d="M7 17H3v-3.5"/><path d="M17 2l-6 6"/><path d="M3 17l6-6"/></svg>
+          <span class="rail-label">Guide</span>
+        </button>
+
+        <button class="rail-item rail-action" id="btnOpenFolder" title="Open Logs Folder">
+          <svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6V16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-4l-2-2H5a2 2 0 0 0-2 2z"/></svg>
+          <span class="rail-label">Logs Folder</span>
+        </button>
+      </div>
+    </aside>
+
+    
+    <div class="app-main-layout">
+      
+      <header class="app-top-toolbar">
+        <div class="toolbar-left">
+          <div class="toolbar-cluster capture-cluster">
+            <div class="status-chip" id="chromeStatusBadge" title="Chrome connection status">
+              <span class="status-dot"></span>
+              <span class="status-text" id="chromeStatusText">Waiting</span>
+            </div>
+            <div class="tabs-dropdown-container">
+              <select id="openTabsSelect" class="custom-select" title="Select the exact Chrome tab to capture">
+                <option value="">Select target tab</option>
+              </select>
+            </div>
+            <button id="btnCapture" class="btn btn-primary">Start capture</button>
+            <span id="captureStatus" class="capture-status-text" role="status">Capture state loading</span>
+          </div>
+
+          <div class="toolbar-cluster">
+            <div class="input-with-label site-filter-container">
+              <span class="input-prefix">Filter:</span>
+              <input type="text" id="siteFilterInput" class="custom-input" placeholder="text or URL: wotpack, .jpg..." title="Display filter: hides table rows that do not contain this text. Does NOT start capture and does NOT change the capture target — that is the tab dropdown + Start capture." spellcheck="false">
+              <button id="btnClearFilter" class="btn-clear-inline" title="Clear filter" style="display:none;">✕</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="toolbar-right">
+          <div class="search-box">
+            <svg class="search-icon" viewBox="0 0 20 20" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="9" cy="9" r="6"/><line x1="13.5" y1="13.5" x2="17.5" y2="17.5"/></svg>
+            <input type="text" id="searchFilterInput" placeholder="Filter requests by URL, method, status..." spellcheck="false">
+            <button id="btnClearSearch" class="btn-clear-search" style="display: none;">×</button>
+          </div>
+          <label class="checkbox-container" title="Search inside response body content (JSON, HTML, text)">
+            <input type="checkbox" id="chkSearchBody">
+            <span class="checkbox-custom"></span>
+            <span class="checkbox-label">Body</span>
+          </label>
+          <label class="checkbox-container" title="Filter out ad pixels, telemetry, and tracking services">
+            <input type="checkbox" id="chkFilterTrackers" checked>
+            <span class="checkbox-custom"></span>
+            <span class="checkbox-label">Trackers</span>
+          </label>
+          <label class="checkbox-container" title="Automatically scroll down to new network events">
+            <input type="checkbox" id="chkAutoScroll" checked>
+            <span class="checkbox-custom"></span>
+            <span class="checkbox-label">Auto-scroll</span>
+          </label>
+          <button id="btnDenseToggle" class="toolbar-icon-btn" title="Dense table rows">≡</button>
+          <button id="btnThemeToggle" class="toolbar-icon-btn" title="Light / dark theme">◐</button>
+        </div>
+      </header>
+
+      
+      <div class="workspace-views-container" id="workspaceViewsContainer">
+        
+        <div class="workspace-view active" id="viewTraffic">
+          
+          <nav class="filters-bar">
+            <div class="resource-types-nav" id="resourceTabs">
+              <button class="res-tab active" data-type="All">All <span class="tab-badge" id="badge-All">0</span></button>
+              <button class="res-tab" data-type="Starred" title="Filter bookmarked / starred requests">Starred <span class="tab-badge" id="badge-Starred">0</span></button>
+              <button class="res-tab" data-type="Doc">Doc <span class="tab-badge" id="badge-Doc">0</span></button>
+              <button class="res-tab" data-type="CSS">CSS <span class="tab-badge" id="badge-CSS">0</span></button>
+              <button class="res-tab" data-type="JS">JS <span class="tab-badge" id="badge-JS">0</span></button>
+              <button class="res-tab" data-type="Font">Font <span class="tab-badge" id="badge-Font">0</span></button>
+              <button class="res-tab" data-type="Img">Img <span class="tab-badge" id="badge-Img">0</span></button>
+              <button class="res-tab" data-type="Media">Media <span class="tab-badge" id="badge-Media">0</span></button>
+              <button class="res-tab" data-type="Manifest">Manifest <span class="tab-badge" id="badge-Manifest">0</span></button>
+              <button class="res-tab" data-type="Socket">Socket <span class="tab-badge" id="badge-Socket">0</span></button>
+              <button class="res-tab" data-type="Wasm">Wasm <span class="tab-badge" id="badge-Wasm">0</span></button>
+              <button class="res-tab" data-type="Other">Other <span class="tab-badge" id="badge-Other">0</span></button>
+            </div>
+
+            <div class="method-filters" id="protoFilters" title="Filter by protocol">
+              <select id="protoSelect" class="custom-select" style="font-size:11px; padding:2px 6px;">
+                <option value="ALL">Protocol: all</option>
+                <option value="h2">h2</option>
+                <option value="h3">h3</option>
+                <option value="http/1.1">http/1.1</option>
+                <option value="websocket">websocket</option>
+              </select>
+            </div>
+
+            <div class="method-filters" id="methodFilters" title="Filter by HTTP Method">
+              <button class="method-chip active" data-method="ALL">ALL</button>
+              <button class="method-chip" data-method="GET">GET</button>
+              <button class="method-chip" data-method="POST">POST</button>
+              <button class="method-chip" data-method="PUT">PUT</button>
+              <button class="method-chip" data-method="DELETE">DEL</button>
+            </div>
+          </nav>
+
+          
+          <main class="main-workspace">
+            
+            <section class="table-pane" id="tablePane">
+              <div class="table-header">
+                <div class="col col-star" title="Bookmark / Star">★</div>
+                <div class="col col-status">Status</div>
+                <div class="col col-method">Method</div>
+                <div class="col col-name">Name &amp; URL</div>
+                <div class="col col-type">Type</div>
+                <div class="col col-initiator">Initiator</div>
+                <div class="col col-size">Size</div>
+                <div class="col col-time">Time</div>
+              </div>
+              <div class="table-body" id="requestsTableBody">
+                <div class="empty-state" id="emptyState">
+                  <div class="empty-title">Waiting for network traffic</div>
+                  <div class="empty-desc">Load the bridge extension in Chrome, select a tab, then press Start capture.</div>
+                  <div class="empty-actions">
+                    <button class="btn btn-primary" id="btnEmptyLaunchChrome">Launch Browser</button>
+                    <button class="btn btn-secondary" id="btnEmptyCdpDirect" title="Launch a debug browser and capture WITHOUT the extension (CDP-direct)">Capture without extension</button>
+                    <button class="btn btn-secondary" id="btnEmptyExtGuide">Extension Guide</button>
+                    <button class="btn btn-secondary" id="btnEmptyOpenFolder">Open Logs Folder</button>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            
+            <div class="pane-resizer" id="paneResizer"></div>
+
+            
+            <section class="details-pane" id="detailsPane">
+              <div class="details-empty" id="detailsEmpty">
+                <div class="details-empty-icon"></div>
+                <div>Select a request from the table to inspect details</div>
+              </div>
+
+              <div class="details-content" id="detailsContent" style="display: none;">
+                
+                <div class="details-tabs-bar">
+                  <button class="detail-tab active" data-tab="headers">Headers</button>
+                  <button class="detail-tab" data-tab="preview">Preview</button>
+                  <button class="detail-tab" data-tab="response">Response</button>
+                  <button class="detail-tab" data-tab="initiator">Initiator</button>
+                  <button class="detail-tab" data-tab="timing">Timing</button>
+                  <button class="detail-tab" data-tab="auth">Auth</button>
+                  <button class="detail-tab" data-tab="security">Connection</button>
+                  <div class="tab-spacer"></div>
+                  <div class="dropdown-wrapper">
+                    <button class="btn btn-small btn-copy-as" id="btnCopyAsMenu" title="Export request to code">Copy As ▾</button>
+                    <div class="dropdown-menu" id="copyAsDropdown" style="display:none;">
+                      <button class="dropdown-item" data-format="py-curl-cffi">Python (curl_cffi)</button>
+                      <button class="dropdown-item" data-format="py-requests">Python (requests)</button>
+                      <button class="dropdown-item" data-format="py-httpx">Python (httpx async)</button>
+                      <button class="dropdown-item" data-format="curl">cURL (bash)</button>
+                      <button class="dropdown-item" data-format="fetch">JavaScript (fetch)</button>
+                    </div>
+                  </div>
+                  <button class="btn btn-small btn-mock-this" id="btnMockThisRequest" title="Create a Mock Rule from this request">Mock</button>
+                  <button class="btn btn-small btn-repeater" id="btnOpenRepeater" title="Open in Repeater to edit and re-send">Repeater</button>
+                  <button class="btn btn-small btn-diff" id="btnOpenDiff" title="Compare this request with another request side-by-side">Diff</button>
+                  <button id="btnCloseDetails" class="btn-icon-only btn-close-details" title="Close Details">✕</button>
+                </div>
+
+                
+                <div class="tab-content active" id="tab-headers">
+                  <div class="section-card">
+                    <div class="section-card-title">General</div>
+                    <div class="kv-grid" id="generalHeadersGrid"></div>
+                  </div>
+
+                  <div class="section-card" id="cardQueryParams" style="display:none;">
+                    <div class="section-card-title">
+                      Query String Parameters
+                      <button class="btn-copy-section" id="btnCopyQueryParams">Copy</button>
+                    </div>
+                    <div class="kv-grid" id="queryParamsGrid"></div>
+                  </div>
+
+                  <div class="section-card" id="cardRequestPayload" style="display:none;">
+                    <div class="section-card-title">
+                      Request Payload / POST Data
+                      <button class="btn-copy-section" id="btnCopyPayload">Copy</button>
+                    </div>
+                    <pre class="code-block" id="requestPayloadContent"></pre>
+                  </div>
+
+                  <div class="section-card">
+                    <div class="section-card-title">
+                      Response Headers
+                      <button class="btn-copy-section" id="btnCopyResponseHeaders">Copy</button>
+                    </div>
+                    <div class="kv-grid" id="responseHeadersGrid"></div>
+                  </div>
+
+                  <div class="section-card">
+                    <div class="section-card-title">
+                      Request Headers
+                      <button class="btn-copy-section" id="btnCopyRequestHeaders">Copy</button>
+                    </div>
+                    <div class="kv-grid" id="requestHeadersGrid"></div>
+                  </div>
+                </div>
+
+                
+                <div class="tab-content" id="tab-preview">
+                  <div class="preview-container" id="previewContainer">
+                    <div class="preview-loading">Generating preview...</div>
+                  </div>
+                </div>
+
+                
+                <div class="tab-content" id="tab-response">
+                  <div class="response-toolbar">
+                    <div class="response-meta" id="responseMeta">0 B | unknown</div>
+                    <div class="response-actions">
+                      <button class="btn-copy-section" id="btnBeautifyResponse">Beautify</button>
+                      <button class="btn-copy-section" id="btnCopyResponse">Copy Body</button>
+                      <button class="btn-copy-section" id="btnOpenSavedFile" title="Reveal raw saved response file in Windows Explorer">Open in Explorer</button>
+                    </div>
+                  </div>
+                  <pre class="code-block response-code-block" id="responseBodyContent"></pre>
+                </div>
+
+                
+                <div class="tab-content" id="tab-initiator">
+                  <div class="section-card">
+                    <div class="section-card-title">Initiator Call Frame</div>
+                    <div class="kv-grid" id="initiatorSummaryGrid"></div>
+                  </div>
+
+                  <div class="section-card">
+                    <div class="section-card-title">Call Stack Trace</div>
+                    <div class="stack-trace-container" id="initiatorStackContainer">
+                      <div class="text-muted">No call stack recorded for this request.</div>
+                    </div>
+                  </div>
+                </div>
+
+                
+                <div class="tab-content" id="tab-timing">
+                  <div class="section-card">
+                    <div class="section-card-title">Timing Waterfall &amp; Breakdown</div>
+                    <div class="waterfall-container" id="waterfallContainer"></div>
+                  </div>
+                </div>
+
+                
+                <div class="tab-content" id="tab-auth">
+                  
+                  <div class="section-card" id="cardAuthToken">
+                    <div class="section-card-title">
+                      <span>Authorization &amp; Tokens</span>
+                      <div class="section-card-actions">
+                        <button class="btn-copy-section" id="btnCopyAuthToken">Copy Token</button>
+                        <button class="btn-copy-section" id="btnCopyJwtPayload" style="display:none;">Copy Claims</button>
+                      </div>
+                    </div>
+                    <div id="authSummaryContent" class="auth-summary-content">
+                      <div class="text-muted">No Authorization header or token found in this request.</div>
+                    </div>
+                  </div>
+
+                  
+                  <div class="section-card" id="cardCookies">
+                    <div class="section-card-title">
+                      <span>Cookies (Request &amp; Response)</span>
+                      <div class="section-card-actions">
+                        <button class="btn-copy-section" id="btnCopyCookieHeader">Copy Header</button>
+                        <button class="btn-copy-section" id="btnCopyCookiesJson">Copy JSON</button>
+                      </div>
+                    </div>
+                    <div id="cookiesContent" class="cookies-content">
+                      <div class="text-muted">No cookies associated with this request.</div>
+                    </div>
+                  </div>
+                </div>
+
+                
+                <div class="tab-content" id="tab-security">
+                  
+                  <div class="section-card" id="cardConnSecurity">
+                    <div class="section-card-title">
+                      <span>Observed connection metadata</span>
+                      <span id="securityStatePill" class="status-pill">
+                        <span class="status-dot-sm"></span>
+                        <span id="securityStateText">Connection metadata unavailable</span>
+                      </span>
+                    </div>
+                    <div class="kv-grid" id="securityConnGrid"></div>
+                  </div>
+
+                </div>
+              </div>
+            </section>
+          </main>
+        </div>
+
+        
+        <div class="workspace-view" id="viewIntercept" style="display: none;">
+          <div class="intercept-layout">
+            <div class="intercept-toolbar">
+              <label class="toggle-control">
+                <input type="checkbox" id="chkInterceptEnabled" />
+                <span>Pause requests on the captured tab</span>
+              </label>
+              <span id="interceptState" class="text-muted" style="font-size: 11px;">Off</span>
+              <div style="flex:1;"></div>
+              <label class="text-muted" style="font-size:10.5px;">Throttle:</label>
+              <select id="throttlePreset" class="custom-select" style="font-size:11px;" title="Network throttling for the captured tab">
+                <option value="off">No throttling</option>
+                <option value="slow3g">Slow 3G</option>
+                <option value="fast3g">Fast 3G</option>
+              </select>
+              <button id="btnInterceptForwardAll" class="btn btn-xs btn-secondary" title="Forward every held request">Forward all</button>
+              <span class="text-muted" style="font-size:10.5px;">Requests held longer than 10 s are released automatically (fail-open)</span>
+            </div>
+            <div id="interceptQueue" class="intercept-queue">
+              <div class="text-muted" style="padding:12px;">Intercept is off. Enable the toggle; requests of the captured tab will pause here.</div>
+            </div>
+          </div>
+        </div>
+
+        
+        <div class="workspace-view" id="viewRepeater" style="display: none;">
+          <div class="repeater-workspace-container" id="repeaterModal">
+            
+            <div class="rep-tabs-bar" id="repTabsBar">
+              
+              <button id="btnRepNewTab" class="rep-tab-add" title="Open new Replay Tab (Ctrl+T)">+</button>
+            </div>
+
+            
+            <div class="repeater-control-bar">
+              <select id="repMethod" class="custom-select rep-method-select">
+                <option value="GET">GET</option>
+                <option value="POST">POST</option>
+                <option value="PUT">PUT</option>
+                <option value="DELETE">DELETE</option>
+                <option value="PATCH">PATCH</option>
+                <option value="HEAD">HEAD</option>
+                <option value="OPTIONS">OPTIONS</option>
+              </select>
+              <input type="text" id="repUrl" class="custom-input rep-url-input" placeholder="https://example.com/api/v1/resource" spellcheck="false">
+              <button id="btnRepSend" class="btn btn-primary rep-send-btn" title="Send Request (Ctrl+Enter)">Send</button>
+            </div>
+
+            <div class="repeater-split-workspace">
+              
+              <div class="repeater-pane">
+                <div class="repeater-pane-header">
+                  <span class="repeater-pane-title">Request</span>
+                  <div class="rep-sub-tabs">
+                    <button class="rep-sub-tab active" data-rep-req-tab="headers">Headers</button>
+                    <button class="rep-sub-tab" data-rep-req-tab="body">Body</button>
+                  </div>
+                </div>
+                <div class="repeater-pane-body">
+                  <div id="repReqTabHeaders" class="rep-tab-content active" style="flex:1; display:flex; flex-direction:column;">
+                    <textarea id="repReqHeadersText" class="code-textarea" placeholder="Key: Value (one per line)" spellcheck="false"></textarea>
+                  </div>
+                  <div id="repReqTabBody" class="rep-tab-content" style="flex:1; display:none; flex-direction:column;">
+                    <div class="rep-body-toolbar">
+                      <button id="btnRepFormatBody" class="btn btn-small btn-ghost">Format JSON</button>
+                    </div>
+                    <textarea id="repReqBodyText" class="code-textarea" placeholder="Request payload / JSON body..." spellcheck="false"></textarea>
+                  </div>
+                </div>
+              </div>
+
+              
+              <div class="repeater-pane">
+                <div class="repeater-pane-header">
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <span class="repeater-pane-title">Response</span>
+                    <span id="repStatusBadge" class="status-pill status-pending" style="display:none;">
+                      <span class="status-dot-sm"></span>
+                      <span id="repStatusText">-</span>
+                    </span>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <span id="repMetaStats" class="text-muted" style="font-size: 11px;">Ready</span>
+                    <div class="rep-sub-tabs">
+                      <button class="rep-sub-tab active" data-rep-res-tab="body">Body</button>
+                      <button class="rep-sub-tab" data-rep-res-tab="headers">Headers</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="repeater-pane-body">
+                  <div id="repResTabBody" class="rep-tab-content active" style="flex:1; display:flex; flex-direction:column;">
+                    <div class="rep-body-toolbar">
+                      <button id="btnRepCopyResponse" class="btn btn-small btn-ghost">Copy Body</button>
+                      <button id="btnRepBeautifyResponse" class="btn btn-small btn-ghost">Beautify</button>
+                    </div>
+                    <pre id="repRespBodyContent" class="code-block response-code-block" style="flex:1; margin:0; overflow:auto;"></pre>
+                  </div>
+                  <div id="repResTabHeaders" class="rep-tab-content" style="flex:1; display:none; flex-direction:column; overflow-y:auto;">
+                    <div class="rep-body-toolbar">
+                      <button id="btnRepCopyHeaders" class="btn btn-small btn-ghost">Copy Headers</button>
+                    </div>
+                    <div id="repResHeadersGrid" class="kv-grid" style="padding: 8px;"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        
+        <div class="workspace-view" id="viewSitemap" style="display: none;">
+          <div class="sitemap-layout">
+            <aside class="sitemap-tree-pane">
+              <div class="sitemap-tree-header">
+                <span class="sitemap-tree-title">Discovered Hosts &amp; Paths</span>
+                <div style="display:flex; gap:6px;">
+                  <button id="btnExportSitemap" class="btn btn-xs btn-ghost" title="Export the sitemap (parameterized paths, counts, methods) as JSON">Export Map</button>
+                  <button id="btnRefreshSitemap" class="btn btn-xs btn-ghost" title="Refresh Tree">Refresh</button>
+                </div>
+              </div>
+              <div id="sitemapTreeContent" class="sitemap-tree-content">
+                
+              </div>
+            </aside>
+            <section class="sitemap-table-pane">
+              <div class="sitemap-pane-header">
+                <span id="sitemapSelectedPathText" class="sitemap-selected-path">All Hosts</span>
+                <span id="sitemapMatchingCount" class="text-muted" style="font-size: 11px;">0 requests</span>
+              </div>
+              <div class="sitemap-requests-list" id="sitemapRequestsList">
+                <div class="empty-state">Select a host or endpoint from the sitemap tree</div>
+              </div>
+            </section>
+          </div>
+        </div>
+
+        
+        <div class="workspace-view" id="viewMock" style="display: none;">
+          <div class="mock-workspace-container" id="mockModal">
+            <div class="mock-top-bar" style="padding: 8px 14px; border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-weight: 600; font-size: 13px;">Match &amp; Replace / Mock Rules</span>
+              <div style="display:flex; gap:8px; align-items:center;">
+                <button id="btnExportMockFixture" class="btn btn-xs btn-ghost" title="Export rules + samples as a reusable fixture JSON">Export fixture</button>
+              </div>
+            </div>
+            <div class="mock-container">
+              
+              <div class="mock-rules-sidebar">
+                <div class="mock-rules-sidebar-header">
+                  <span class="mock-sidebar-title">Rules (<span id="mockRulesCount">0</span>)</span>
+                  <button id="btnNewMockRule" class="btn btn-small btn-primary">+ New Rule</button>
+                </div>
+                <div id="mockRulesList" class="mock-rules-list">
+                  
+                </div>
+              </div>
+
+              
+              <div class="mock-rule-editor" id="mockRuleEditor">
+                <div id="mockEditorEmpty" class="mock-empty-placeholder">
+                  <div style="font-size: 14px; margin-bottom: 8px; color: var(--text-muted);">No Rule Selected</div>
+                  <div>Select a mock rule from the list or click <strong>"+ New Rule"</strong> to create one.</div>
+                </div>
+                <div id="mockEditorForm" class="mock-editor-form" style="display: none;">
+                  <div class="mock-form-row">
+                    <div class="mock-form-group" style="flex: 1;">
+                      <label class="mock-label">Rule Name:</label>
+                      <input type="text" id="mockRuleName" class="form-input mock-name-input" placeholder="e.g. Stub Auth Profile" />
+                    </div>
+                    <label class="toggle-control mock-toggle-label">
+                      <input type="checkbox" id="mockRuleEnabled" checked />
+                      <span>Rule Enabled</span>
+                    </label>
+                  </div>
+
+                  <div class="mock-form-row">
+                    <div class="mock-form-group" style="width: 110px;">
+                      <label class="mock-label">Method:</label>
+                      <select id="mockRuleMethod" class="custom-select" style="width: 100%;">
+                        <option value="ALL">ALL</option>
+                        <option value="GET">GET</option>
+                        <option value="POST">POST</option>
+                        <option value="PUT">PUT</option>
+                        <option value="DELETE">DELETE</option>
+                        <option value="PATCH">PATCH</option>
+                      </select>
+                    </div>
+                    <div class="mock-form-group" style="flex: 1;">
+                      <label class="mock-label">URL Pattern (Wildcard * supported):</label>
+                      <input type="text" id="mockRuleUrlPattern" class="form-input code-font" placeholder="e.g. */api/v1/user* or exact URL" />
+                    </div>
+                  </div>
+
+                  <div class="mock-form-row">
+                    <div class="mock-form-group" style="flex: 1;">
+                      <label class="mock-label">Response Headers (Key: Value, one per line):</label>
+                      <textarea id="mockRuleHeaders" class="code-textarea" style="min-height: 56px;" placeholder="X-Custom-Header: value" spellcheck="false"></textarea>
+                    </div>
+                  </div>
+
+                  <div class="mock-form-row">
+                    <div class="mock-form-group" style="width: 130px;">
+                      <label class="mock-label">Status Code:</label>
+                      <input type="number" id="mockRuleStatus" class="form-input code-font" value="200" min="100" max="599" />
+                    </div>
+                    <div class="mock-form-group" style="flex: 1;">
+                      <label class="mock-label">Content-Type:</label>
+                      <input type="text" id="mockRuleContentType" class="form-input code-font" value="application/json; charset=utf-8" />
+                    </div>
+                  </div>
+
+                  <div class="mock-form-group" style="flex: 1; display: flex; flex-direction: column;">
+                    <div class="mock-body-header">
+                      <label class="mock-label">Mock Response Body:</label>
+                      <div style="display: flex; gap: 6px;">
+                        <button id="btnMockFormatJson" class="btn btn-small btn-ghost">Format JSON</button>
+                        <button id="btnMockClearBody" class="btn btn-small btn-ghost">Clear</button>
+                      </div>
+                    </div>
+                    <textarea id="mockRuleBody" class="code-textarea mock-body-textarea" placeholder='{"status": "success", "data": {"id": 1, "role": "admin"}}' spellcheck="false"></textarea>
+                  </div>
+
+                  <div class="mock-actions-bar">
+                    <button id="btnDeleteMockRule" class="btn btn-danger">Delete</button>
+                    <div style="display: flex; gap: 8px;">
+                      <button id="btnDuplicateMockRule" class="btn btn-secondary">Duplicate</button>
+                      <button id="btnSaveMockRule" class="btn btn-primary">Save Rule</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        
+        <div class="workspace-view" id="viewSessions" style="display: none;">
+          <div class="sessions-layout">
+            <section class="sessions-list-pane">
+              <div class="sessions-header">
+                <span class="sessions-title">Saved sessions (logs/)</span>
+                <button id="btnRefreshSessions" class="btn btn-xs btn-ghost" title="Rescan the logs folder">Refresh</button>
+              </div>
+              <div class="sessions-search">
+                <input type="text" id="searchAllInput" class="custom-input" placeholder="Search all sessions (URL, headers, bodies)..." spellcheck="false">
+                <button id="btnSearchAll" class="btn btn-xs btn-secondary">Search</button>
+              </div>
+              <div id="sessionsList" class="sessions-list">
+                <div class="text-muted" style="padding:12px;">Loading sessions...</div>
+              </div>
+              <div id="trashBlock" class="trash-block">
+                <div class="text-muted" style="padding:6px 0;">Trash: …</div>
+                <button id="btnEmptyTrash" class="btn btn-xs btn-danger" title="Permanently empty the trash">Empty trash</button>
+              </div>
+            </section>
+            <section class="sessions-compare-pane">
+              <div class="sessions-header">
+                <span class="sessions-title">Compare API surface</span>
+                <span class="text-muted" style="font-size:10.5px;">parameterized endpoints, counts and status drift</span>
+              </div>
+              <div class="sessions-compare-controls">
+                <select id="sessCompareA" class="custom-select"></select>
+                <span class="text-muted" style="font-size:11px;">vs</span>
+                <select id="sessCompareB" class="custom-select"></select>
+                <button id="btnRunCompare" class="btn btn-primary btn-small">Compare</button>
+              </div>
+              <div id="sessionsCompareResults" class="sessions-compare-results">
+                <div class="text-muted" style="padding:12px;">Pick two sessions and press Compare.</div>
+              </div>
+              <div class="sessions-search-results" id="searchAllResults" style="display:none;">
+                <div class="sessions-header"><span class="sessions-title" id="searchAllTitle">Search results</span></div>
+                <div id="searchAllList" class="search-all-list"></div>
+              </div>
+              <div class="sessions-tokens">
+                <div class="sessions-header">
+                  <span class="sessions-title">Tokens in this session (JWT &amp; auth)</span>
+                  <span class="text-muted" style="font-size:10.5px;">decoded claims, expiry warnings</span>
+                </div>
+                <div id="tokensList" class="tokens-list"><div class="text-muted" style="padding:10px;">Open a session to see its tokens.</div></div>
+              </div>
+            </section>
+          </div>
+        </div>
+
+        
+        <div class="workspace-view" id="viewDiff" style="display: none;">
+          <div class="diff-workspace-container" id="diffModal">
+            <div class="diff-selectors-bar">
+              <div class="diff-selector-col">
+                <label class="diff-label">Base Request (A):</label>
+                <select id="diffSelectA" class="custom-select diff-select"></select>
+              </div>
+              <div class="diff-vs-badge">VS</div>
+              <div class="diff-selector-col">
+                <label class="diff-label">Comparison Request (B):</label>
+                <select id="diffSelectB" class="custom-select diff-select"></select>
+              </div>
+
+            </div>
+
+            <div class="diff-container" id="diffResultsContainer">
+              
+            </div>
+          </div>
+        </div>
+      </div>
+
+      
+      <footer class="bottom-bar">
+        <div class="stat-item">
+          <span class="stat-label">Chrome:</span>
+          <span class="stat-value" id="statChromeStatus">Disconnected</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Filter:</span>
+          <span class="stat-value" id="statActiveFilter">None (All traffic)</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Requests:</span>
+          <span class="stat-value" id="statTotalRequests">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Transferred:</span>
+          <span class="stat-value" id="statTotalBytes">0 B</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">WebSockets:</span>
+          <span class="stat-value" id="statWebSockets">0</span>
+        </div>
+        <div class="stat-item" id="statDeliveryItem" title="Delivery queue of the extension transport: queued events, bytes backlog, dropped events, sent events">
+          <span class="stat-label">Delivery:</span>
+          <span class="stat-value" id="statDelivery">0 queued / 0 dropped</span>
+        </div>
+        <div class="stat-item status-filter-pill">
+          <button class="status-count dot-2xx" id="stat2xx" title="Click to filter by 2xx success responses">2xx: 0</button>
+          <button class="status-count dot-3xx" id="stat3xx" title="Click to filter by 3xx redirects">3xx: 0</button>
+          <button class="status-count dot-4xx" id="stat4xx" title="Click to filter by 4xx client errors">4xx: 0</button>
+          <button class="status-count dot-5xx" id="stat5xx" title="Click to filter by 5xx server errors">5xx: 0</button>
+        </div>
+        <div class="bottom-spacer"></div>
+        <div class="stat-item current-dir-hint" id="bottomDirHint" title="Saved directory">
+          Logs: <span id="statOutputDir">Loading...</span>
+        </div>
+      </footer>
+    </div>
+  </div>
+
+  
+  <div class="modal-overlay" id="extBridgeModal" style="display:none;">
+    <div class="modal-card modal-standard">
+      <div class="modal-header">
+        <div class="modal-title">Connect Your Chromium Browser (Chrome, Edge, Brave, Vivaldi, Opera)
+        </div>
+        <button class="modal-close" id="btnCloseExtModal">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-intro">
+          You <strong>do not need to restart</strong> your browser! Connect the unpacked bridge extension in 10 seconds:
+        </p>
+        <ol class="modal-steps">
+          <li>In a Chromium browser (Chrome, Edge, Brave, Vivaldi, Opera), open <code class="code-pill">chrome://extensions</code></li>
+          <li>Turn on <strong>"Developer mode"</strong> in the top-right corner.</li>
+          <li>Click <strong>"Load unpacked"</strong>.</li>
+          <li>Select the <code class="code-pill">network-path\extension</code> folder.</li>
+          <li><em>(If already installed)</em>: click the <strong>Reload</strong> icon on the card.</li>
+        </ol>
+        <div class="modal-action-row" style="margin-top: 14px;">
+          <button id="btnOpenExtFolderDirect" class="btn btn-primary">Open Extension Folder in Explorer
+          </button>
+        </div>
+        <p class="modal-note">
+          Once active, the extension badge will light up <span style="color:var(--accent-green); font-weight:600;">ON</span> and Network-path will immediately receive traffic!
+        </p>
+      </div>
+    </div>
+  </div>
+
+  
+  <div class="modal-overlay" id="confirmClearModal" style="display:none;">
+    <div class="modal-card modal-dialog">
+      <div class="modal-header">
+        <div class="modal-title">
+          Clear Current View?
+        </div>
+        <button class="modal-close" id="btnCloseClearModal">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="color: var(--text-primary); font-size: 13px; line-height: 1.5;">
+          Remove the currently displayed requests from this view?
+        </p>
+        <p style="color: var(--accent-yellow); font-size: 12px; margin-top: 8px;">
+          Saved files and session totals are kept. Capture continues; requests that finish after clearing may appear again.
+        </p>
+        <div class="modal-action-row" style="margin-top: 18px; display: flex; justify-content: flex-end; gap: 8px;">
+          <button id="btnCancelClear" class="btn btn-secondary">Cancel</button>
+          <button id="btnConfirmClear" class="btn btn-danger">Clear View</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  
+  <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+  <script src="tauri-bridge.js"></script>
+  <script src="renderer.js"></script>
+</body>
+</html>
