@@ -1,0 +1,57 @@
+name: macOS builds
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: macOS ${{ matrix.arch }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15
+            target: aarch64-apple-darwin
+            arch: arm64
+          - runner: macos-15-intel
+            target: x86_64-apple-darwin
+            arch: x64
+    runs-on: ${{ matrix.runner }}
+    env:
+      CARGO_TERM_COLOR: always
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+          key: macos-${{ matrix.arch }}
+      - name: Install dependencies
+        run: npm ci
+      - name: Build application and DMG
+        run: npm run build -- --target ${{ matrix.target }} --bundles app,dmg
+      - name: Verify application resources
+        shell: bash
+        run: |
+          set -euo pipefail
+          app="src-tauri/target/${{ matrix.target }}/release/bundle/macos/network-path.app"
+          test -f "$app/Contents/MacOS/app"
+          test -f "$app/Contents/Resources/extension/manifest.json"
+          test -f "$app/Contents/Resources/extension/icons/icon128.png"
+          file "$app/Contents/MacOS/app"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: installers-macos-${{ matrix.arch }}
+          if-no-files-found: error
+          retention-days: 14
+          path: src-tauri/target/${{ matrix.target }}/release/bundle/dmg/*.dmg

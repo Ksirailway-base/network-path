@@ -1,6 +1,6 @@
 {
   "name": "network-path",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Network traffic inspector & parser with DevTools Network schema export",
   "main": "src/index.html",
   "scripts": {
