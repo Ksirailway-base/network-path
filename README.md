@@ -20,6 +20,8 @@ Network-path is a desktop HTTP, HTTPS, and WebSocket inspector built with Tauri 
 
 **Windows preview.** macOS and Linux packaging targets are configured, but platform support is still in progress.
 
+[Download v0.1.0 Preview](https://github.com/Ksirailway-base/network-path/releases/tag/v0.1.0) · [macOS build status](https://github.com/Ksirailway-base/network-path/actions/workflows/release.yml)
+
 Install Node.js, Rust, MSVC Build Tools with the Windows SDK, and WebView2 Runtime. Then, from the project directory:
 
 ```sh
